@@ -14,7 +14,7 @@ import java.util.List;
  * @date 2018-11-30
  */
 public class DemoTrainPrimalForm {
-    private final int epochs = 5;
+    private final int epochs = 10000;
     private final double eta = 1.0;
     private int featureDimension;
     private String trainFile;
@@ -32,7 +32,6 @@ public class DemoTrainPrimalForm {
 
     public void train() {
         for (int epoch = 0; epoch < epochs; epoch++) {
-            System.out.println("epoch: " + epoch);
             for (Instance instance : trainSet) {
                 if (!isWrong(instance)) {
                     continue;
@@ -41,6 +40,11 @@ public class DemoTrainPrimalForm {
                     weights[i] += eta * instance.getLabel() * instance.getFeature()[i];
                 }
                 bias += eta * instance.getLabel();
+            }
+            List<Instance> wrongPoints = getWrongPoints();
+            if (epoch % 10 == 0) {
+                System.out.println("epoch: " + epoch);
+                System.out.println("wrong count: " + wrongPoints.size());
             }
             if (getWrongPoints().isEmpty()) {
                 break;
@@ -105,7 +109,12 @@ public class DemoTrainPrimalForm {
     private void writeModelFile() {
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(modelFile));
-            bw.write(weights[0] + "," + weights[1]);
+            StringBuilder weightsLine = new StringBuilder();
+            for (double weight : weights) {
+                weightsLine.append(weight);
+                weightsLine.append(",");
+            }
+            bw.write(weightsLine.substring(0, weightsLine.length() - 1));
             bw.write("\n");
             bw.write(String.valueOf(bias));
             bw.close();
@@ -119,7 +128,7 @@ public class DemoTrainPrimalForm {
         String dataSetName = "sonar";
         //int featureDimension = 2;
         int featureDimension = 60;
-        DemoTrainPrimalForm demoTrainPrimalForm = new DemoTrainPrimalForm(dataSetName, 60);
+        DemoTrainPrimalForm demoTrainPrimalForm = new DemoTrainPrimalForm(dataSetName, featureDimension);
         demoTrainPrimalForm.train();
     }
 }
