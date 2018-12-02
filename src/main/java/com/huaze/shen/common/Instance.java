@@ -8,25 +8,25 @@ import java.util.Arrays;
  */
 public class Instance {
     private int id;
-    private int[] feature;
+    private double[] feature;
     private int label;
 
-    public Instance(int[] feature, int label) {
+    public Instance(double[] feature, int label) {
         this.feature = feature;
         this.label = label;
     }
 
-    public Instance(int id, int[] feature, int label) {
+    public Instance(int id, double[] feature, int label) {
         this.id = id;
         this.feature = feature;
         this.label = label;
     }
 
-    public int[] getFeature() {
+    public double[] getFeature() {
         return feature;
     }
 
-    public void setFeature(int[] feature) {
+    public void setFeature(double[] feature) {
         this.feature = feature;
     }
 
@@ -49,7 +49,8 @@ public class Instance {
     @Override
     public String toString() {
         return "Instance{" +
-                "feature=" + Arrays.toString(feature) +
+                "id=" + id +
+                ", feature=" + Arrays.toString(feature) +
                 ", label=" + label +
                 '}';
     }

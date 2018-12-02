@@ -2,41 +2,53 @@ package com.huaze.shen.train;
 
 import com.huaze.shen.common.Instance;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * 感知机原始形式
+ * 感知机学习算法的原始形式
  *
  * @author Huaze Shen
  * @date 2018-11-30
  */
 public class DemoTrainPrimalForm {
-    private final int FEATURE_DIMENSION = 2;
+    private final int epochs = 5;
     private final double eta = 1.0;
+    private int featureDimension;
+    private String trainFile;
     private List<Instance> trainSet;
+    private String modelFile;
     private double[] weights;
     private double bias;
 
-    public DemoTrainPrimalForm() {
+    public DemoTrainPrimalForm(String dataSetName, int featureDimension) {
+        this.featureDimension = featureDimension;
+        trainFile = "data/" + dataSetName + "/train-set.txt";
+        modelFile = "src/main/resources/model/"+ dataSetName + "/model.txt";
         init();
     }
 
     public void train() {
-        while (!getWrongPoints().isEmpty()) {
-            List<Instance> wrongPoints = getWrongPoints();
-            Instance selectedWrongPoint = wrongPoints.get(0);
-            for (int i = 0; i < FEATURE_DIMENSION; i++) {
-                weights[i] += eta * selectedWrongPoint.getLabel() * selectedWrongPoint.getFeature()[i];
+        for (int epoch = 0; epoch < epochs; epoch++) {
+            System.out.println("epoch: " + epoch);
+            for (Instance instance : trainSet) {
+                if (!isWrong(instance)) {
+                    continue;
+                }
+                for (int i = 0; i < featureDimension; i++) {
+                    weights[i] += eta * instance.getLabel() * instance.getFeature()[i];
+                }
+                bias += eta * instance.getLabel();
             }
-            bias += eta * selectedWrongPoint.getLabel();
+            if (getWrongPoints().isEmpty()) {
+                break;
+            }
         }
-        String modelFile = "src/main/resources/model.txt";
-        writeModelFile(modelFile);
+        System.out.println("weights: " + Arrays.toString(weights));
+        System.out.println("bias: " + bias);
+        writeModelFile();
     }
 
     private List<Instance> getWrongPoints() {
@@ -52,7 +64,7 @@ public class DemoTrainPrimalForm {
     private boolean isWrong(Instance instance) {
         int label = instance.getLabel();
         double predict = 0;
-        for (int i = 0; i < FEATURE_DIMENSION; i++) {
+        for (int i = 0; i < featureDimension; i++) {
             predict += instance.getFeature()[i] * weights[i];
         }
         predict += bias;
@@ -65,15 +77,18 @@ public class DemoTrainPrimalForm {
     }
 
     private void loadDataSet() {
-        String trainFile = "src/main/resources/data/train-set.txt";
         trainSet = new ArrayList<>();
         try {
-            BufferedReader br = new BufferedReader(new FileReader(trainFile));
+            InputStream inputStream = DemoTrainPrimalForm.class.getClassLoader().getResourceAsStream(trainFile);
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
             String line;
             while ((line = br.readLine()) != null) {
                 String[] lineSplit = line.split(",");
-                int[] feature = new int[]{Integer.valueOf(lineSplit[0]), Integer.valueOf(lineSplit[1])};
-                int label = Integer.valueOf(lineSplit[2]);
+                double[] feature = new double[featureDimension];
+                for (int i = 0; i < featureDimension; i++) {
+                    feature[i] = Double.valueOf(lineSplit[i]);
+                }
+                int label = Integer.valueOf(lineSplit[featureDimension]);
                 trainSet.add(new Instance(feature, label));
             }
             br.close();
@@ -83,11 +98,11 @@ public class DemoTrainPrimalForm {
     }
 
     private void initWeights() {
-        weights = new double[]{0, 0};
+        weights = new double[featureDimension];
         bias = 0;
     }
 
-    private void writeModelFile(String modelFile) {
+    private void writeModelFile() {
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(modelFile));
             bw.write(weights[0] + "," + weights[1]);
@@ -100,7 +115,11 @@ public class DemoTrainPrimalForm {
     }
 
     public static void main(String[] args) {
-        DemoTrainPrimalForm demoTrainPrimalForm = new DemoTrainPrimalForm();
+        //String dataSetName = "artificial";
+        String dataSetName = "sonar";
+        //int featureDimension = 2;
+        int featureDimension = 60;
+        DemoTrainPrimalForm demoTrainPrimalForm = new DemoTrainPrimalForm(dataSetName, 60);
         demoTrainPrimalForm.train();
     }
 }

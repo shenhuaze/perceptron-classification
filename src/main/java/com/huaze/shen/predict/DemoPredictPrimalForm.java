@@ -63,7 +63,7 @@ public class DemoPredictPrimalForm {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] lineSplit = line.split(",");
-                int[] feature = new int[]{Integer.valueOf(lineSplit[0]), Integer.valueOf(lineSplit[1])};
+                double[] feature = new double[]{Double.valueOf(lineSplit[0]), Double.valueOf(lineSplit[1])};
                 int label = Integer.valueOf(lineSplit[2]);
                 validSet.add(new Instance(feature, label));
             }

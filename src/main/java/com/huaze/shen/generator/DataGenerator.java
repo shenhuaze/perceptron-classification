@@ -10,11 +10,11 @@ import java.util.Random;
  */
 public class DataGenerator {
     public void generate() {
-        String trainFile = "src/main/resources/data/train-set.txt";
+        String trainFile = "src/main/resources/data/artificial/train-set.txt";
         int trainSize = 7000;
         generateData(trainFile, trainSize);
 
-        String testFile = "src/main/resources/data/test-set.txt";
+        String testFile = "src/main/resources/data/artificial/test-set.txt";
         int testSize = 3000;
         generateData(testFile, testSize);
     }

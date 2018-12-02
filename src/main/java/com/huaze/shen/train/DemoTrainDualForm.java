@@ -2,40 +2,59 @@ package com.huaze.shen.train;
 
 import com.huaze.shen.common.Instance;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * 感知机对偶形式
+ * 感知机学习算法的对偶形式
  *
  * @author Huaze Shen
  * @date 2018-11-30
  */
 public class DemoTrainDualForm {
-    private final int TRAIN_SIZE = 7000;
+    private final int epochs = 4;
+    private final int TRAIN_SIZE = 7004;
     private final int FEATURE_DIMENSION = 2;
     private final double eta = 1.0;
     private double[] alphas;
     private List<Instance> trainSet;
+    private String trainFile;
+    private String modelFile;
     private double bias;
 
-    public DemoTrainDualForm() {
+    public DemoTrainDualForm(String dataSetName) {
+        trainFile = "data/" + dataSetName + "/train-set.txt";
+        modelFile = "src/main/resources/model/"+ dataSetName + "/model.txt";
         init();
     }
 
     public void train() {
-        while (!getWrongPoints().isEmpty()) {
-            List<Instance> wrongPoints = getWrongPoints();
-            Instance selectedWrongPoint = wrongPoints.get(0);
-            alphas[selectedWrongPoint.getId()] += eta;
-            bias += eta * selectedWrongPoint.getLabel();
+        for (int epoch = 0; epoch < epochs; epoch++) {
+            System.out.println("epoch: " + epoch);
+            for (Instance instance : trainSet) {
+                if (!isWrong(instance)) {
+                    continue;
+                }
+                alphas[instance.getId()] += eta;
+                bias += eta * instance.getLabel();
+            }
+            if (getWrongPoints().isEmpty()) {
+                break;
+            }
         }
-        String modelFile = "src/main/resources/alpha.txt";
-        writeModelFile(modelFile);
+
+        double[] weights = new double[FEATURE_DIMENSION];
+        for (int i = 0; i < FEATURE_DIMENSION; i++) {
+            for (int j = 0; j < TRAIN_SIZE; j++) {
+                weights[i] += alphas[j] * trainSet.get(j).getLabel() * trainSet.get(j).getFeature()[i];
+            }
+        }
+        System.out.println("weights: " + Arrays.toString(weights));
+        System.out.println("bias: " + bias);
+
+        writeModelFile();
     }
 
     private List<Instance> getWrongPoints() {
@@ -73,15 +92,15 @@ public class DemoTrainDualForm {
     }
 
     private void loadDataSet() {
-        String trainFile = "src/main/resources/data/train-set.txt";
         trainSet = new ArrayList<>();
         try {
-            BufferedReader br = new BufferedReader(new FileReader(trainFile));
+            InputStream inputStream = DemoTrainDualForm.class.getClassLoader().getResourceAsStream(trainFile);
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
             String line;
             int i = 0;
             while ((line = br.readLine()) != null) {
                 String[] lineSplit = line.split(",");
-                int[] feature = new int[]{Integer.valueOf(lineSplit[0]), Integer.valueOf(lineSplit[1])};
+                double[] feature = new double[]{Double.valueOf(lineSplit[0]), Double.valueOf(lineSplit[1])};
                 int label = Integer.valueOf(lineSplit[2]);
                 trainSet.add(new Instance(i, feature, label));
                 i += 1;
@@ -93,11 +112,11 @@ public class DemoTrainDualForm {
     }
 
     private void initModel() {
-        alphas = new double[]{-1, 1};
+        alphas = new double[TRAIN_SIZE];
         bias = 0;
     }
 
-    private void writeModelFile(String modelFile) {
+    private void writeModelFile() {
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(modelFile));
             StringBuilder alphaLine = new StringBuilder();
@@ -115,7 +134,8 @@ public class DemoTrainDualForm {
     }
 
     public static void main(String[] args) {
-        DemoTrainDualForm demoTrainDualForm = new DemoTrainDualForm();
+        String dataSetName = "artificial";
+        DemoTrainDualForm demoTrainDualForm = new DemoTrainDualForm(dataSetName);
         demoTrainDualForm.train();
     }
 }
