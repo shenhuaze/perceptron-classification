@@ -54,10 +54,10 @@ public class DemoPredict {
             y += instance.getFeature()[i] * weights[i];
         }
         y += bias;
-        if (y <= 0) {
-            return -1;
+        if (y >= 0) {
+            return 1;
         }
-        return 1;
+        return -1;
     }
 
     private void init() {
