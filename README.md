@@ -1,2 +1,1 @@
-# simple-perceptron
-用java简单实现感知机算法
+用java实现感知机用于二分类问题
