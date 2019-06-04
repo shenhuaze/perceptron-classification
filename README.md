@@ -1,1 +1,1 @@
-基于感知机算法实现二分类，原理参考李航《统计学习方法》第二章。
+Implementation of perceptron algorithm based on Java
